@@ -135,12 +135,13 @@ class RPSGame {
 
 
     doesMoveWin(move1, move2) {
-        if (move1 === 1 && (move2 === 3 || move2 === 5)) return true;
-        if (move1 === 2 && (move2 === 1 || move2 === 4)) return true;
-        if (move1 === 3 && (move2 === 2 || move2 === 5)) return true;
-        if (move1 === 4 && (move2 === 3 || move2 === 1)) return true;
-        if (move1 === 5 && (move2 === 4 || move2 === 2)) return true;
-        return false;
+        // Contract logic: if same parity, lower wins; if different parity, higher wins
+        if (move1 === move2) return false; // Tie
+        if (move1 % 2 === move2 % 2) {
+            return move1 < move2; // Same parity, lower wins
+        } else {
+            return move1 > move2; // Different parity, higher wins
+        }
     }
 
     generateSecureRandom() {
@@ -857,25 +858,26 @@ class RPSGame {
             let winner = null;
 
             if (stake === '0') {
-                // Game is over, determine winner by checking balances or other logic
                 gameOutcome = 'completed';
 
-                // Get the actual moves from the contract to determine winner
-                const c1Hash = await gameContract.methods.c1Hash().call();
+                // Get the actual moves from the contract to determine what happened
                 const c2 = await gameContract.methods.c2().call();
-
-                // Determine winner based on the game rules
-                const userMove = this.moveMapping[parseInt(move)]; // User's revealed move
-                const opponentMove = parseInt(c2); // Opponent's move from contract
+                const userMove = this.moveMapping[parseInt(move)];
+                const opponentMove = parseInt(c2);
 
                 console.log('Game moves - User:', userMove, 'Opponent:', opponentMove);
+                console.log('Contract win logic - User beats opponent:', this.doesMoveWin(userMove, opponentMove));
+                console.log('Contract win logic - Opponent beats user:', this.doesMoveWin(opponentMove, userMove));
 
+                // Check if it was a tie by comparing moves
                 if (userMove === opponentMove) {
                     winner = 'Tie! Funds split equally';
                 } else if (this.doesMoveWin(userMove, opponentMove)) {
                     winner = '🎉 You won!';
-                } else {
+                } else if (this.doesMoveWin(opponentMove, userMove)) {
                     winner = '😔 You lost';
+                } else {
+                    winner = 'Tie! Funds split equally';
                 }
             }
 
