@@ -1,0 +1,21 @@
+{
+    "solidity.compileUsingRemoteVersion": "0.8.19",
+    "solidity.defaultCompiler": "remote",
+    "files.associations": {
+        "*.sol": "solidity"
+    },
+    "emmet.includeLanguages": {
+        "javascript": "javascriptreact"
+    },
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.fixAll": true
+    },
+    "terminal.integrated.defaultProfile.windows": "PowerShell",
+    "terminal.integrated.profiles.windows": {
+        "PowerShell": {
+            "source": "PowerShell",
+            "icon": "terminal-powershell"
+        }
+    }
+}

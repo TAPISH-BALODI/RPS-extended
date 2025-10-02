@@ -1,0 +1,19 @@
+{
+  "name": "rps-extended",
+  "version": "1.0.0",
+  "description": "Rock Paper Scissors Lizard Spock Web3 Game",
+  "scripts": {
+    "compile": "hardhat compile",
+    "node": "hardhat node",
+    "deploy": "hardhat run scripts/deploy.js --network localhost",
+    "dev": "concurrently \"hardhat node\" \"npx serve public -l 3000\"",
+    "build": "hardhat compile",
+    "start": "npx serve public -l 3000",
+    "serve": "npx serve public -l 3000"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^3.0.0",
+    "hardhat": "^2.26.3",
+    "concurrently": "^8.2.2"
+  }
+}

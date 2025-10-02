@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rock Paper Scissors Lizard Spock - Web3 Game</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/web3@4.2.2/dist/web3.min.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <header class="game-header">
+            <h1>Rock Paper Scissors Lizard Spock</h1>
+            <p class="game-description">Secure blockchain-based game using commit-reveal scheme</p>
+        </header>
+
+        <!-- Wallet Connection Section -->
+        <div class="card wallet-section">
+            <div class="card__body">
+                <div id="wallet-disconnected">
+                    <h3>Connect Your Wallet</h3>
+                    <p>Connect MetaMask to start playing. Make sure you're on Hardhat Local network.</p>
+                    <button id="connect-wallet" class="btn btn--primary">Connect MetaMask</button>
+                </div>
+
+                <div id="wallet-connected" class="hidden">
+                    <div class="wallet-info">
+                        <h3>Wallet Connected</h3>
+                        <div class="wallet-details">
+                            <p><strong>Address:</strong> <span id="user-address"></span></p>
+                            <p><strong>Balance:</strong> <span id="user-balance"></span> ETH</p>
+                            <p><strong>Network:</strong> <span id="network-name"></span></p>
+                        </div>
+                        <div class="wallet-actions">
+                            <button id="disconnect-wallet" class="btn btn--secondary btn--sm">Disconnect</button>
+                            <button id="clear-memory" class="btn btn--danger btn--sm">Clear Memory</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Rules Section -->
+        <div class="card rules-section">
+            <div class="card__body">
+                <h3>Game Rules</h3>
+                <div class="rules-grid">
+                    <div class="rule-item">🪨 <strong>Rock</strong> beats Scissors & Lizard</div>
+                    <div class="rule-item">📄 <strong>Paper</strong> beats Rock & Spock</div>
+                    <div class="rule-item">✂️ <strong>Scissors</strong> beats Paper & Lizard</div>
+                    <div class="rule-item">🦎 <strong>Lizard</strong> beats Spock & Paper</div>
+                    <div class="rule-item">🖖 <strong>Spock</strong> beats Scissors & Rock</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Actions Section -->
+        <div class="game-actions">
+            <div class="action-tabs">
+                <button id="create-game-tab" class="tab-button active">Create Game</button>
+                <button id="join-game-tab" class="tab-button">Join Game</button>
+                <button id="my-games-tab" class="tab-button">My Games</button>
+            </div>
+
+            <!-- Create Game Panel -->
+            <div id="create-game-panel" class="card game-panel">
+                <div class="card__body">
+                    <h3>Create New Game</h3>
+                    <form id="create-game-form">
+                        <div class="form-group">
+                            <label class="form-label">Opponent Address</label>
+                            <input type="text" id="opponent-address" class="form-control" placeholder="0x..." required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Stake Amount (ETH)</label>
+                            <input type="number" id="stake-amount" class="form-control" min="0.001" step="0.001"
+                                placeholder="0.01" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Choose Your Move</label>
+                            <div class="move-selection">
+                                <div class="move-option" data-move="0">
+                                    <div class="move-icon">🪨</div>
+                                    <div class="move-name">Rock</div>
+                                </div>
+                                <div class="move-option" data-move="1">
+                                    <div class="move-icon">📄</div>
+                                    <div class="move-name">Paper</div>
+                                </div>
+                                <div class="move-option" data-move="2">
+                                    <div class="move-icon">✂️</div>
+                                    <div class="move-name">Scissors</div>
+                                </div>
+                                <div class="move-option" data-move="3">
+                                    <div class="move-icon">🦎</div>
+                                    <div class="move-name">Lizard</div>
+                                </div>
+                                <div class="move-option" data-move="4">
+                                    <div class="move-icon">🖖</div>
+                                    <div class="move-name">Spock</div>
+                                </div>
+                            </div>
+                            <input type="hidden" id="selected-move" required>
+                        </div>
+
+                        <button type="submit" class="btn btn--primary btn--full-width" disabled>Create Game</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Join Game Panel -->
+            <div id="join-game-panel" class="card game-panel hidden">
+                <div class="card__body">
+                    <h3>Join Existing Game</h3>
+                    <form id="join-game-form">
+                        <div class="form-group">
+                            <label class="form-label">Contract Address</label>
+                            <input type="text" id="game-id-input" class="form-control"
+                                placeholder="Enter contract address" required>
+                        </div>
+
+                        <button type="button" id="load-game" class="btn btn--secondary">Load Game Details</button>
+                    </form>
+
+                    <div id="game-details" class="hidden">
+                        <h4>Game Details</h4>
+                        <div class="game-info">
+                            <p><strong>Player 1:</strong> <span id="game-player1"></span></p>
+                            <p><strong>Stake:</strong> <span id="game-stake"></span> ETH</p>
+                            <p><strong>Status:</strong> <span id="game-status"></span></p>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Choose Your Move</label>
+                            <div class="move-selection" id="join-move-selection">
+                                <div class="move-option" data-move="0">
+                                    <div class="move-icon">🪨</div>
+                                    <div class="move-name">Rock</div>
+                                </div>
+                                <div class="move-option" data-move="1">
+                                    <div class="move-icon">📄</div>
+                                    <div class="move-name">Paper</div>
+                                </div>
+                                <div class="move-option" data-move="2">
+                                    <div class="move-icon">✂️</div>
+                                    <div class="move-name">Scissors</div>
+                                </div>
+                                <div class="move-option" data-move="3">
+                                    <div class="move-icon">🦎</div>
+                                    <div class="move-name">Lizard</div>
+                                </div>
+                                <div class="move-option" data-move="4">
+                                    <div class="move-icon">🖖</div>
+                                    <div class="move-name">Spock</div>
+                                </div>
+                            </div>
+                            <input type="hidden" id="join-selected-move">
+                        </div>
+
+                        <button id="join-game-btn" class="btn btn--primary btn--full-width" disabled>Join Game</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- My Games Panel -->
+            <div id="my-games-panel" class="card game-panel hidden">
+                <div class="card__body">
+                    <div class="games-header">
+                        <h3>My Games</h3>
+                        <div class="games-actions">
+                            <button id="refresh-games" class="btn btn--secondary btn--sm">Refresh</button>
+                        </div>
+                    </div>
+
+                    <!-- Games Tabs -->
+                    <div class="games-tabs">
+                        <button id="active-games-tab" class="games-tab-button active">Active Games</button>
+                        <button id="completed-games-tab" class="games-tab-button">Completed</button>
+                        <button id="all-games-tab" class="games-tab-button">All Games</button>
+                    </div>
+
+                    <!-- Games Content -->
+                    <div id="games-content">
+                        <!-- Active Games -->
+                        <div id="active-games-list" class="games-section">
+                            <div id="active-games-container">
+                                <p class="no-games">No active games found.</p>
+                            </div>
+                        </div>
+
+                        <!-- Completed Games -->
+                        <div id="completed-games-list" class="games-section hidden">
+                            <div id="completed-games-container">
+                                <p class="no-games">No completed games found.</p>
+                            </div>
+                        </div>
+
+                        <!-- All Games -->
+                        <div id="all-games-list" class="games-section hidden">
+                            <div id="all-games-container">
+                                <p class="no-games">No games found. Create or join a game to get started.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game State Display -->
+        <div id="game-state-display" class="card hidden">
+            <div class="card__body">
+                <h3>Active Game</h3>
+                <div id="game-state-content">
+                    <!-- Dynamic content will be inserted here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Reveal Move Modal -->
+        <div id="reveal-modal" class="modal hidden">
+            <div class="modal-content">
+                <h3>Reveal Your Move</h3>
+                <p>Enter your original move and the salt to reveal and determine the winner.</p>
+
+                <div class="form-group">
+                    <label class="form-label">Your Move</label>
+                    <select id="reveal-move" class="form-control" required>
+                        <option value="">Select your move</option>
+                        <option value="0">Rock</option>
+                        <option value="1">Paper</option>
+                        <option value="2">Scissors</option>
+                        <option value="3">Lizard</option>
+                        <option value="4">Spock</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Salt (saved automatically)</label>
+                    <input type="text" id="reveal-salt" class="form-control" readonly>
+                </div>
+
+                <div class="modal-actions">
+                    <button id="reveal-move-btn" class="btn btn--primary">Reveal Move</button>
+                    <button id="close-reveal-modal" class="btn btn--secondary">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Messages -->
+        <div id="status-messages" class="status-container"></div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>

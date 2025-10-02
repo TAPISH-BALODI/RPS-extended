@@ -1,0 +1,80 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Start Hardhat Node",
+            "type": "shell",
+            "command": "npx",
+            "args": [
+                "hardhat",
+                "node"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "new"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Deploy Contract",
+            "type": "shell",
+            "command": "npx",
+            "args": [
+                "hardhat",
+                "run",
+                "scripts/deploy.js",
+                "--network",
+                "localhost"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "new"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Serve Web App",
+            "type": "shell",
+            "command": "python",
+            "args": [
+                "-m",
+                "http.server",
+                "3000"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/public"
+            },
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "new"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Compile Contracts",
+            "type": "shell",
+            "command": "npx",
+            "args": [
+                "hardhat",
+                "compile"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "new"
+            },
+            "problemMatcher": []
+        }
+    ]
+}

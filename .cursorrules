@@ -1,0 +1,51 @@
+# Cursor IDE Rules for Rock Paper Scissors Lizard Spock Web3 Project
+
+## Project Context
+This is a Web3 game built with:
+- Original RPS.sol smart contract (unchanged)
+- Vanilla JavaScript with Web3.js for frontend
+- MetaMask integration for wallet connectivity
+- Static web application (no build process)
+
+## Development Workflow
+1. **Smart Contract**: Uses original RPS.sol contract exactly as provided
+2. **Frontend Development**: Edit files in public/ directory
+3. **Testing**: Serve from public/ directory on any local server
+4. **Deployment**: Static hosting (GitHub Pages, Netlify, etc.)
+
+## Key Files
+- `contracts/RPS.sol` - Original smart contract (do not modify)
+- `public/app.js` - Frontend JavaScript with Web3 integration
+- `public/index.html` - Main web interface
+- `public/style.css` - Styling
+
+## No Build Process Required
+- Direct HTML/CSS/JS files
+- Web3.js loaded from CDN
+- No Node.js or npm required
+- No Hardhat or compilation needed
+
+## Web3 Development Tips
+- Each game creates its own RPS contract instance
+- Use contract addresses instead of game IDs
+- Direct contract interaction via Web3.js
+- MetaMask handles all wallet operations
+
+## Code Style
+- Use modern JavaScript (ES6+)
+- Follow original RPS.sol contract exactly
+- Comment Web3.js interactions clearly
+- Use semantic HTML and CSS custom properties
+- No frameworks - vanilla JavaScript only
+
+## Testing
+- Test on Ethereum testnets (Sepolia, Goerli)
+- Use MetaMask for wallet operations
+- Verify contract deployments on block explorers
+- Test all game flows: create, join, reveal
+
+## Deployment
+- Static hosting only (no server required)
+- HTTPS required for MetaMask
+- Any web server can host the files
+- No build or compilation needed
