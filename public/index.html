@@ -6,7 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rock Paper Scissors Lizard Spock - Web3 Game</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Web3 and Web3Modal Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/web3@4.2.2/dist/web3.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/web3modal@1.9.12/dist/index.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/evm-chains@0.2.0/dist/umd/index.min.js"></script>
 </head>
 
 <body>
@@ -76,8 +79,11 @@
 
                         <div class="form-group">
                             <label class="form-label">Stake Amount (ETH)</label>
-                            <input type="number" id="stake-amount" class="form-control" min="0.001" step="0.001"
+                            <input type="number" id="stake-amount" class="form-control" min="0.0001" step="0.001"
                                 placeholder="0.01" required>
+                            <small style="color: #737373; font-size: 12px; margin-top: 4px; display: block;">
+                                ⏰ Note: If opponent doesn't respond within 5 minutes, you can claim a timeout.
+                            </small>
                         </div>
 
                         <div class="form-group">
@@ -236,6 +242,9 @@
                         <option value="3">Lizard</option>
                         <option value="4">Spock</option>
                     </select>
+                    <small style="color: #737373; font-size: 12px; margin-top: 4px; display: block;">
+                        Your move is auto-filled from saved data. Do not change it.
+                    </small>
                 </div>
 
                 <div class="form-group">
@@ -252,9 +261,25 @@
 
         <!-- Status Messages -->
         <div id="status-messages" class="status-container"></div>
+
+        <!-- Contract Verification Info -->
+        <div class="card" style="margin-top: 20px; background-color: #fef3c7; border-color: #fbbf24;">
+            <div class="card__body">
+                <h4 style="margin-bottom: 10px;">⚠️ Contract Verification</h4>
+                <p style="font-size: 14px; margin-bottom: 10px;">
+                    Each game creates a new smart contract instance. You can verify the contract code on Etherscan
+                    before playing.
+                </p>
+                <p style="font-size: 14px; margin: 0;">
+                    <strong>View source:</strong> <a
+                        href="https://github.com/TAPISH-BALODI/RPS-extended/blob/main/contracts/RPS.sol" target="_blank"
+                        rel="noopener">GitHub Repository</a>
+                </p>
+            </div>
+        </div>
     </div>
 
-    <script src="app.js"></script>
+    <script type="module" src="app.js"></script>
 </body>
 
 </html>

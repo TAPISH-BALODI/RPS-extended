@@ -1,174 +1,388 @@
-# Rock Paper Scissors Lizard Spock - Web3 Game
+# Migration Guide - RPS Extended v2.0
 
-A decentralized blockchain-based implementation of the classic Rock Paper Scissors Lizard Spock game using Web3 technology and smart contracts.
+This guide helps you understand the changes and how to work with the codebase.
 
-## 🎮 What is this?
+## 🗂️ New File Structure
 
-This is a Web3 version of the popular "Rock Paper Scissors Lizard Spock" game, made famous by The Big Bang Theory. The game runs on the Ethereum blockchain using smart contracts to ensure fair play and secure transactions.
-
-## 🚀 Features
-
-- **Blockchain-based**: Secure, transparent, and tamper-proof gameplay
-- **Commit-Reveal Scheme**: Prevents cheating by hiding moves until both players have committed
-- **Real Money Stakes**: Play with real ETH on any Ethereum network
-- **Smart Contract Integration**: Automated game logic and payouts
-- **MetaMask Integration**: Easy wallet connection and transaction management
-- **Responsive Design**: Works on desktop and mobile devices
-
-## 🎯 How to Play
-
-### Game Rules
-The game extends traditional Rock Paper Scissors with two additional moves:
-
-- **Rock (🪨)** beats Scissors and Lizard
-- **Paper (📄)** beats Rock and Spock  
-- **Scissors (✂️)** beats Paper and Lizard
-- **Lizard (🦎)** beats Spock and Paper
-- **Spock (🖖)** beats Scissors and Rock
-
-### Game Flow
-
-1. **Create Game**: Player 1 creates a game with a commitment (hidden move) and stake
-2. **Join Game**: Player 2 joins using the contract address and makes their move
-3. **Reveal Move**: Player 1 reveals their move to determine the winner
-4. **Payout**: Winner receives the total stake, or it's split on a tie
-
-## 🛠️ Getting Started
-
-### Prerequisites
-
-- MetaMask browser extension
-- Any Ethereum network (mainnet, testnet, or local)
-- **For contract deployment**: Hardhat or similar development environment
-
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd RPS-extended
-   ```
-
-2. **For contract deployment (required for game creation)**
-   ```bash
-   npm install --save-dev hardhat
-   npx hardhat compile
-   ```
-
-3. **Open the application**
-   - Simply open `public/index.html` in your browser
-   - Or SERVE it using any local web server (npx serve public -l 3000)
-
-4. **Connect MetaMask**
-   - Make sure MetaMask is installed and unlocked
-   - Connect to your preferred Ethereum network
-   - Ensure you have ETH for gas fees and stakes
-
-### ⚠️ Important Note
-
-**Game creation requires compiled contract bytecode.** The current setup will show an error when trying to create games because the RPS.sol contract needs to be compiled first.
-
-**To enable game creation, choose one option:**
-
-**🔧 Option 1: Use Hardhat**
-```bash
-npm install --save-dev hardhat @nomicfoundation/hardhat-toolbox
-npx hardhat compile
-# Copy bytecode from artifacts/contracts/RPS.sol/RPS.json
-# Update deployment code in public/app.js
 ```
-## 🎮 How to Use
+public/
+├── index.html                  # Main HTML (updated with Web3Modal)
+├── style.css                   # Styles (updated with new classes)
+├── app.js                      # Main entry point (ES6 module)
+├── utils/
+│   ├── constants.js           # All constants and configuration
+│   ├── validation.js          # Validation helper functions
+│   └── crypto.js              # Cryptographic utilities
+└── managers/
+    ├── WalletManager.js       # Wallet connection (Web3Modal)
+    ├── ContractManager.js     # Smart contract interactions
+    ├── GameManager.js         # Game state management
+    └── UIManager.js           # UI updates and rendering
+```
 
-### Creating a Game
+## 📦 Module Overview
 
-1. **Connect Wallet**: Click "Connect MetaMask" and approve the connection
-2. **Create Game**: 
-   - Enter opponent's wallet address
-   - Set stake amount in ETH
-   - Select your move (Rock, Paper, Scissors, Lizard, or Spock)
-   - Click "Create Game"
-3. **Share Contract**: Share the generated contract address with your opponent
+### `app.js` - Main Entry Point
+```javascript
+// Initializes all managers and sets up callbacks
+// Exposes rpsUI globally for onclick handlers
+```
 
-### Joining a Game
+### `utils/constants.js`
+```javascript
+// Exports:
+- CHAIN_IDS: Supported network chain IDs
+- NETWORK_NAMES: Human-readable network names
+- TIMEOUT_DURATION: 5 minutes in milliseconds
+- POLLING_INTERVAL: 10 seconds
+- GAME_STATES: Enum for game states
+- MOVE_NAMES, MOVE_ICONS, MOVE_MAPPING
+- CONTRACT_ABI, CONTRACT_BYTECODE
+```
 
-1. **Get Contract Address**: Receive the contract address from the game creator
-2. **Load Game**: Enter the contract address and click "Load Game Details"
-3. **Join Game**: Select your move and click "Join Game"
-4. **Wait for Reveal**: Wait for the creator to reveal their move
+### `utils/validation.js`
+```javascript
+// Exports:
+- isValidEthereumAddress(address): Validates address format
+- validateStakeAmount(stake): Validates stake with warnings
+- shortenAddress(address): Display format (0x1234...5678)
+- isTimeoutElapsed(timestamp): Check if 5 min passed
+- getTimeRemaining(timestamp): Get milliseconds remaining
+- formatTimeRemaining(ms): Format as "4:30"
+```
 
-### Revealing Moves
+### `utils/crypto.js`
+```javascript
+// Exports:
+- generateSecureRandom(): Generate secure salt
+- createCommitment(web3, move, salt): Create hash
+- doesMoveWin(move1, move2): Game logic
+```
 
-1. **Go to My Games**: Click on "My Games" tab
-2. **Find Your Game**: Look for games with "Ready to reveal" status
-3. **Reveal Move**: Click "Reveal Move" and enter your original move and salt
-4. **Get Results**: The winner is determined and funds are distributed
+### `managers/WalletManager.js`
+```javascript
+class WalletManager {
+  // Methods:
+  async init(): Initialize Web3Modal
+  async connect(): Connect wallet
+  async disconnect(): Disconnect wallet
+  getAccount(): Get current account
+  getChainId(): Get current chain ID
+  getNetworkName(): Get network name
+  async getBalance(): Get ETH balance
+  isConnected(): Check connection status
+  getWeb3(): Get Web3 instance
+  
+  // Callbacks:
+  onAccountChange(callback)
+  onChainChange(callback)
+  onConnect(callback)
+  onDisconnect(callback)
+}
+```
 
-## 🔧 Technical Details
+### `managers/ContractManager.js`
+```javascript
+class ContractManager {
+  // Methods:
+  async deployGame(opponent, stake, move, salt)
+  async joinGame(gameAddress, move)
+  async revealMove(gameAddress, move, salt)
+  async claimTimeout(gameAddress, timeoutType)
+  async getGameDetails(gameAddress)
+  async isGameCompleted(gameAddress)
+}
+```
 
-### Smart Contract
+### `managers/GameManager.js`
+```javascript
+class GameManager {
+  // Methods:
+  async createGame(opponent, stake, move)
+  async joinGame(gameAddress, move)
+  async revealMove(gameId, move, salt)
+  async claimTimeout(gameId, timeoutType)
+  getAllGames()
+  getActiveGames()
+  getCompletedGames()
+  getGame(gameId)
+  clearAllGames()
+  startPolling()
+  stopPolling()
+  async updateGameStates()
+  
+  // Callbacks:
+  onGameUpdate(callback)
+}
+```
 
-The game uses the original RPS.sol contract with the following key functions:
+### `managers/UIManager.js`
+```javascript
+class UIManager {
+  // Methods:
+  init()
+  updateWalletUI()
+  updateGamesList()
+  openRevealModal(gameId)
+  closeRevealModal()
+  claimTimeout(gameId, timeoutType)
+  viewGameDetails(gameId)
+  showMessage(message, type, duration)
+  
+  // Internal:
+  setupEventListeners()
+  handleCreateGame(e)
+  handleJoinGame()
+  handleRevealMove()
+  renderGameItem(game)
+  startTimeoutTimer(gameId, lastAction, btnId)
+  // ... and more
+}
+```
 
-- **Constructor**: Creates a new game with commitment and opponent
-- **play()**: Allows player 2 to join and make their move
-- **solve()**: Allows player 1 to reveal their move and determine winner
-- **Timeout functions**: Handle cases where players don't respond
+## 🔄 How Data Flows
 
-### Security Features
+```
+User Action (UI)
+    ↓
+UIManager (handles event)
+    ↓
+GameManager (manages state)
+    ↓
+ContractManager (blockchain call)
+    ↓
+WalletManager (Web3 provider)
+    ↓
+Blockchain
+    ↓
+GameManager (polling detects change)
+    ↓
+UIManager (updates display)
+```
 
-- **Commit-Reveal Scheme**: Moves are hidden until both players commit
-- **Cryptographic Hashing**: Uses keccak256 for move commitments
-- **Timeout Protection**: Prevents games from being stuck indefinitely
-- **Automatic Payouts**: Smart contract handles all fund distribution
+## 🎯 Key Concepts
 
-## 🌐 Network Support
+### 1. Automatic Polling
+```javascript
+// GameManager starts polling when wallet connects
+gameManager.startPolling(); // Every 10 seconds
 
-The game works on any Ethereum-compatible network:
+// Polling checks all active games for:
+// - Player 2 joining
+// - Game completion
+// - State changes
+```
 
-- **Ethereum Mainnet**: Real ETH stakes
-- **Ethereum Testnets**: Sepolia, Goerli, etc.
-- **Local Networks**: Hardhat, Ganache, etc.
-- **Layer 2 Solutions**: Polygon, Arbitrum, etc.
+### 2. Event-Driven Architecture
+```javascript
+// Managers emit events via callbacks
+walletManager.onAccountChange(() => {
+  // Update UI when account changes
+});
 
-## 🎯 Game Strategy
+gameManager.onGameUpdate(() => {
+  // Refresh games list when state updates
+});
+```
 
-### Tips for Players
+### 3. Loading States
+```javascript
+// All async operations show loading
+uiManager.setButtonLoading(button, true);
+try {
+  await someAsyncOperation();
+} finally {
+  uiManager.setButtonLoading(button, false);
+}
+```
 
-1. **Choose Your Stakes Wisely**: Only stake what you can afford to lose
-2. **Keep Your Salt Safe**: You need it to reveal your move
-3. **Check Network Fees**: Gas costs vary by network
-4. **Verify Opponents**: Make sure you trust the person you're playing against
+### 4. Validation Before Submit
+```javascript
+// Real-time validation
+input.addEventListener('input', (e) => {
+  if (isValidEthereumAddress(e.target.value)) {
+    enableSubmitButton();
+  }
+});
+```
 
-### Common Scenarios
+## 🧪 Testing Locally
 
-- **Tie Games**: Stakes are returned to both players
-- **Timeout**: If a player doesn't respond, the other can claim the funds
-- **Network Issues**: Transactions may fail due to network congestion
+### 1. Start Local Server
+```bash
+# Use any static server
+npx http-server public/
 
-## 🚨 Important Notes
+# Or Python
+python -m http.server 8080
 
-- **Gas Fees**: Each transaction requires ETH for gas fees
-- **Network Congestion**: High network usage may cause delays
-- **Permanent Moves**: Once committed, moves cannot be changed
-- **Smart Contract Risk**: While audited, smart contracts carry inherent risks
+# Or Node.js serve
+npx serve public/
+```
 
-## 🤝 Contributing
+### 2. Access Application
+```
+Open: http://localhost:8080
+```
 
-This project uses the original RPS.sol contract exactly as provided. The frontend is built with vanilla JavaScript and Web3.js for maximum compatibility.
+### 3. Test Features
 
-## 📄 License
+#### ✅ Wallet Connection
+1. Click "Connect MetaMask"
+2. Approve connection in Web3Modal popup
+3. Should show address, balance, network
 
-This project uses the original RPS.sol contract under the WTFPL license. See the contract file for details.
+#### ✅ Address Validation
+1. Go to "Create Game"
+2. Type invalid address (e.g., "0x123")
+3. Should see red border, button disabled
+4. Type valid address (0x + 40 hex chars)
+5. Button should enable when move selected
 
-## 🆘 Support
+#### ✅ Create Game
+1. Enter valid opponent address
+2. Enter stake amount (any amount works now)
+3. Select a move
+4. Click "Create Game"
+5. Should show loading, then success
+6. Game appears in "My Games" tab
 
-If you encounter issues:
+#### ✅ Automatic Updates
+1. Create a game
+2. Have opponent join from another account
+3. Wait up to 10 seconds
+4. Game state should auto-update to "Ready to reveal"
 
-1. **Check MetaMask**: Ensure it's connected and unlocked
-2. **Verify Network**: Make sure you're on the correct network
-3. **Check Gas**: Ensure you have enough ETH for gas fees
-4. **Browser Console**: Check for error messages in the browser console
+#### ✅ Timeout Countdown
+1. Create a game (opponent doesn't join)
+2. Click "My Games"
+3. Should see "Claim Timeout (4:59)" counting down
+4. Button disabled until 5:00 elapsed
+5. After 5 min, shows "(Available now)" and enables
+
+#### ✅ Reveal Move
+1. As Player 1, after Player 2 joins
+2. Click "Reveal Move"
+3. Modal shows your move (disabled selector)
+4. Salt auto-filled
+5. Click "Reveal Move"
+6. Game completes, shows winner
+
+## 🔧 Customization
+
+### Change Polling Interval
+```javascript
+// utils/constants.js
+export const POLLING_INTERVAL = 5000; // 5 seconds instead of 10
+```
+
+### Add New Network
+```javascript
+// utils/constants.js
+export const CHAIN_IDS = {
+  HARDHAT: '0x7a69',
+  SEPOLIA: '0xaa36a7',
+  GOERLI: '0x5',  // Add new network
+  MAINNET: '0x1'
+};
+
+export const NETWORK_NAMES = {
+  [CHAIN_IDS.GOERLI]: 'Goerli Testnet'  // Add name
+};
+```
+
+### Customize Timeout Duration
+```javascript
+// utils/constants.js
+export const TIMEOUT_DURATION = 10 * 60 * 1000; // 10 minutes
+```
+
+### Change Stake Validation
+```javascript
+// utils/validation.js
+export function validateStakeAmount(stake) {
+  const stakeNum = parseFloat(stake);
+  
+  if (stakeNum <= 0) {
+    return { valid: false, message: 'Must be positive' };
+  }
+  
+  if (stakeNum < 0.001) {
+    return { valid: false, message: 'Minimum 0.001 ETH' };
+  }
+  
+  return { valid: true };
+}
+```
+
+## 🐛 Debugging
+
+### Check Module Loading
+```javascript
+// Open browser console
+// Should see modules loading without errors
+```
+
+### View Current State
+```javascript
+// In console:
+window.rpsUI.gameManager.getAllGames()
+window.rpsUI.walletManager.getAccount()
+window.rpsUI.walletManager.getNetworkName()
+```
+
+### Enable Debug Logging
+```javascript
+// Add to any manager constructor:
+this.debug = true;
+
+// Add to methods:
+if (this.debug) console.log('Debug info:', data);
+```
+
+## 🚨 Common Issues
+
+### Issue: "Cannot use import statement outside a module"
+**Solution:** Ensure script tag has `type="module"`:
+```html
+<script type="module" src="app.js"></script>
+```
+
+### Issue: "Failed to fetch dynamically imported module"
+**Solution:** Files must be served via HTTP, not file:// protocol
+
+### Issue: Web3Modal not found
+**Solution:** Check CDN scripts loaded before app.js:
+```html
+<script src="https://cdn.jsdelivr.net/npm/web3modal@1.9.12/dist/index.js"></script>
+```
+
+### Issue: Polling not working
+**Solution:** Check wallet is connected:
+```javascript
+// Polling only starts when wallet connected
+walletManager.isConnected() // Should be true
+```
+
+## 📚 Additional Resources
+
+- [Web3Modal Docs](https://github.com/Web3Modal/web3modal)
+- [Web3.js Docs](https://web3js.readthedocs.io/)
+- [ES6 Modules](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)
+
+## ✅ Checklist for Custom Deployment
+
+- [ ] Update contract bytecode if using modified RPS.sol
+- [ ] Configure supported networks in constants.js
+- [ ] Update GitHub link in index.html
+- [ ] Test on all target networks
+- [ ] Verify polling interval is appropriate
+- [ ] Check timeout duration matches contract
+- [ ] Test wallet connection on target deployment
+- [ ] Ensure CORS headers if on custom domain
 
 ---
 
-**Happy Gaming! 🎮✨**
+**Version:** 2.0  
+**Last Updated:** October 2025
+
